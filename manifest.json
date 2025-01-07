@@ -1,0 +1,22 @@
+{
+  "name": "Calculadora de Precios",
+  "short_name": "CalcPrecios",
+  "description": "Aplicación web para calcular precios y gestionar listas de productos.",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#ffe6f2",
+  "theme_color": "#d63384",
+  "icons": [
+    {
+      "src": "icons/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "icons/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ],
+  "orientation": "portrait"
+}
