@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora de Precios</title>
+    <style>
+        :root {
+            --primary-color: #d63384;
+            --primary-hover: #e85b9a;
+            --background-color: #ffe6f2;
+            --card-background: #fff;
+            --delete-button: #ff4d6d;
+            --delete-hover: #e60026;
+            --item-background: #ffb3cc;
+            --success-background: #d4edda;
+            --success-text: #155724;
+            --border-radius: 8px;
+            --spacing-sm: 8px;
+            --spacing-md: 16px;
+            --spacing-lg: 24px;
+        }
+
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background-color: var(--background-color);
+            margin: 0;
+            padding: var(--spacing-lg);
+        }
+
+        .container {
+            max-width: 500px;
+            margin: auto;
+            background: var(--card-background);
+            border-radius: var(--border-radius);
+            padding: var(--spacing-lg);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            text-align: center;
+            color: var(--primary-color);
+        }
+
+        .exchange-rate {
+            text-align: center;
+            padding: var(--spacing-sm);
+            background: var(--primary-color);
+            color: white;
+            border-radius: var(--border-radius);
+            margin-bottom: var(--spacing-md);
+            font-weight: bold;
+        }
+
+        .input-group {
+            margin: var(--spacing-md) 0;
+        }
+
+        input, select, button {
+            width: 100%;
+            padding: var(--spacing-sm);
+            margin-bottom: var(--spacing-sm);
+            border-radius: var(--border-radius);
+            border: 1px solid #ddd;
+        }
+
+        button {
+            background: var(--primary-color);
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: var(--primary-hover);
+        }
+
+        .product-item {
+            background: var(--item-background);
+            padding: var(--spacing-sm);
+            margin: var(--spacing-sm) 0;
+            border-radius: var(--border-radius);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .product-item button {
+            background: var(--delete-button);
+            color: white;
+            width: auto;
+            padding: var(--spacing-sm);
+            border-radius: var(--border-radius);
+            font-size: 12px;
+            margin-left: var(--spacing-sm);
+        }
+
+        .product-item button:hover {
+            background: var(--delete-hover);
+        }
+
+        .total-section {
+            margin-top: var(--spacing-md);
+            padding: var(--spacing-md);
+            background: var(--success-background);
+            color: var(--success-text);
+            border-radius: var(--border-radius);
+            text-align: center;
+        }
+
+        .list-container {
+            margin-top: var(--spacing-lg);
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .saved-list {
+            margin-top: var(--spacing-md);
+            padding: var(--spacing-md);
+            background: var(--card-background);
+            border: 1px solid #ddd;
+            border-radius: var(--border-radius);
+            position: relative;
+        }
+
+        .saved-list h3 {
+            margin: 0;
+            color: var(--primary-color);
+        }
+
+        .saved-list p {
+            margin: var(--spacing-sm) 0;
+        }
+
+        .saved-list ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .saved-list li {
+            margin-bottom: var(--spacing-sm);
+        }
+
+        .saved-list button {
+            position: absolute;
+            top: var(--spacing-sm);
+            right: var(--spacing-sm);
+            background: var(--delete-button);
+            color: white;
+            width: auto;
+            padding: var(--spacing-sm);
+            border-radius: var(--border-radius);
+            font-size: 12px;
+        }
+
+        .saved-list button:hover {
+            background: var(--delete-hover);
+        }
+
+        .profit-display {
+            color: green;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Calculadora de Precios</h1>
+        <div id="tipoCambio" class="exchange-rate">Cargando tipo de cambio...</div>
+
+        <div class="input-group">
+            <label for="productQuantity">Cantidad:</label>
+            <select id="productQuantity"></select>
+        </div>
+        
+        <div class="input-group">
+            <label for="productValue">Valor Unitario ($):</label>
+            <input type="number" id="productValue" placeholder="Precio del producto" min="0" step="0.01" required>
+        </div>
+        
+        <button id="calculate" aria-label="Calcular Precio">Calcular Precio</button>
+        <div class="input-group" id="calculatedPrice"></div>
+
+        <div class="input-group">
+            <label for="productName">Nombre del Producto:</label>
+            <input type="text" id="productName" placeholder="Nombre del producto" required>
+        </div>
+        <button id="saveProduct" aria-label="Guardar Producto">Guardar Producto</button>
+
+        <div class="list-container">
+            <h2>Productos Guardados</h2>
+            <ul id="listContainer"></ul>
+        </div>
+
+        <div class="total-section">
+            <p>Total: $<span id="totalAmount">0.00</span></p>
+            <p>Ganancia: $<span id="totalProfit">0.00</span></p>
+        </div>
+
+        <div class="input-group">
+            <label for="listName">Nombre de la Lista:</label>
+            <input type="text" id="listName" placeholder="Nombre de la lista" required>
+        </div>
+        <button id="saveList" aria-label="Guardar Lista">Guardar Lista</button>
+        <button id="viewLists" aria-label="Ver Listas Guardadas">Ver Listas Guardadas</button>
+        <button id="closeLists" class="hidden" aria-label="Cerrar Listas">Cerrar Listas</button>
+
+        <div id="savedLists" class="list-container hidden"></div>
+    </div>
+
+    <script>
+        let productList = [];
+        let savedLists = {};
+        let currentDollarRate = 0;
+
+        const elements = {
+            productQuantity: document.getElementById('productQuantity'),
+            productValue: document.getElementById('productValue'),
+            productName: document.getElementById('productName'),
+            calculatedPrice: document.getElementById('calculatedPrice'),
+            listContainer: document.getElementById('listContainer'),
+            totalAmount: document.getElementById('totalAmount'),
+            totalProfit: document.getElementById('totalProfit'),
+            listName: document.getElementById('listName'),
+            savedLists: document.getElementById('savedLists'),
+            closeLists: document.getElementById('closeLists'),
+            tipoCambio: document.getElementById('tipoCambio')
+        };
+
+        // Token y URL para la API de Banxico
+        const token = 'b965794c8b78d6234f5811bd0365ffb8cc5d853e6c49e96a49247c5ed2c70567';
+        const url = `https://www.banxico.org.mx/SieAPIRest/service/v1/series/SF43718/datos/oportuno?token=${token}`;
+
+        // Función para actualizar el tipo de cambio
+        function actualizarTipoCambio() {
+            fetch(url)
+                .then(response => response.json())
+                .then(data => {
+                    currentDollarRate = parseFloat(data.bmx.series[0].datos[0].dato);
+                    elements.tipoCambio.innerText = `1 USD = ${currentDollarRate.toFixed(2)} MXN`;
+                })
+                .catch(error => {
+                    console.error('Error al obtener el tipo de cambio:', error);
+                    elements.tipoCambio.innerText = 'Error al cargar tipo de cambio';
+                });
+        }
+
+        // Inicializar tipo de cambio y actualizarlo cada 5 minutos
+        actualizarTipoCambio();
+        setInterval(actualizarTipoCambio, 5 * 60 * 1000);
+
+        // Inicializar selector de cantidad
+        for (let i = 1; i <= 20; i++) {
+            elements.productQuantity.innerHTML += `<option value="${i}">${i}</option>`;
+        }
+
+        function calculatePrice(quantity, value) {
+            const price = value * quantity * 1.0825 * 1.15 * currentDollarRate;
+            const profit = price - (value * quantity * currentDollarRate);
+            return { price, profit };
+        }
+
+        document.getElementById('calculate').addEventListener('click', () => {
+            const quantity = parseInt(elements.productQuantity.value);
+            const value = parseFloat(elements.productValue.value);
+
+            if (isNaN(quantity) || isNaN(value) || quantity <= 0 || value <= 0) {
+                elements.calculatedPrice.textContent = 'Introduzca valores válidos.';
+            } else {
+                const { price, profit } = calculatePrice(quantity, value);
+                elements.calculatedPrice.innerHTML = `
+                    <p>Precio Calculado: $${price.toFixed(2)}</p>
+                    <p class="profit-display">Ganancia: $${profit.toFixed(2)}</p>
+                `;
+            }
+        });
+
+        document.getElementById('saveProduct').addEventListener('click', () => {
+            const name = elements.productName.value.trim();
+            const quantity = parseInt(elements.productQuantity.value);
+            const value = parseFloat(elements.productValue.value);
+
+            if (!name || isNaN(quantity) || isNaN(value) || quantity <= 0 || value <= 0) {
+                alert('Por favor, ingrese datos válidos.');
+                return;
+            }
+
+            const { price: total, profit } = calculatePrice(quantity, value);
+
+            productList.push({ name, total, profit });
+            updateProductList();
+        });
+
+        function updateProductList() {
+            const fragment = document.createDocumentFragment();
+            let total = 0, profit = 0;
+            productList.forEach((p, index) => {
+                total += p.total;
+                profit += p.profit;
+                const li = document.createElement('li');
+                li.className = 'product-item';
+                li.innerHTML = `
+                    ${p.name} - $${p.total.toFixed(2)}
+                    <button onclick="deleteProduct(${index})">X</button>
+                `;
+                fragment.appendChild(li);
+            });
+            elements.listContainer.innerHTML = '';
+            elements.listContainer.appendChild(fragment);
+            elements.totalAmount.textContent = total.toFixed(2);
+            elements.totalProfit.textContent = profit.toFixed(2);
+        }
+
+        function deleteProduct(index) {
+            productList.splice(index, 1);
+            updateProductList();
+        }
+
+        document.getElementById('saveList').addEventListener('click', () => {
+            const listName = elements.listName.value.trim();
+            if (!listName || productList.length === 0) {
+                alert('Ingresa un nombre para la lista y añade productos.');
+                return;
+            }
+            savedLists[listName] = [...productList];
+            productList = [];
+            updateProductList();
+            alert(`Lista "${listName}" guardada.`);
+        });
+
+        document.getElementById('viewLists').addEventListener('click', () => {
+            elements.savedLists.classList.remove('hidden');
+            elements.closeLists.classList.remove('hidden');
+            elements.savedLists.innerHTML = '';
+            for (const [name, products] of Object.entries(savedLists)) {
+                let total = products.reduce((sum, p) => sum + p.total, 0);
+                let profit = products.reduce((sum, p) => sum + p.profit, 0);
+                elements.savedLists.innerHTML += `
+                    <div class="saved-list">
+                        <h3>${name}</h3>
+                        <ul>${products.map(p => `<li>${p.name} - $${p.total.toFixed(2)}</li>`).join('')}</ul>
+                        <p><strong>Total:</strong> $${total.toFixed(2)}</p>
+                        <p><strong>Ganancia:</strong> $${profit.toFixed(2)}</p>
+                        <button onclick="deleteList('${name}')">X</button>
+                    </div>`;
+            }
+        });
+
+        function deleteList(listName) {
+            delete savedLists[listName];
+            elements.savedLists.innerHTML = '';
+            for (const [name, products] of Object.entries(savedLists)) {
+                let total = products.reduce((sum, p) => sum + p.total, 0);
+                let profit = products.reduce((sum, p) => sum + p.profit, 0);
+                elements.savedLists.innerHTML += `
+                    <div class="saved-list">
+                        <h3>${name}</h3>
+                        <ul>${products.map(p => `<li>${p.name} - $${p.total.toFixed(2)}</li>`).join('')}</ul>
+                        <p><strong>Total:</strong> $${total.toFixed(2)}</p>
+                        <p><strong>Ganancia:</strong> $${profit.toFixed(2)}</p>
+                        <button onclick="deleteList('${name}')">X</button>
+                    </div>`;
+            }
+        }
+
+        elements.closeLists.addEventListener('click', () => {
+            elements.savedLists.classList.add('hidden');
+            elements.closeLists.classList.add('hidden');
+        });
+    </script>
+</body>
+</html>
